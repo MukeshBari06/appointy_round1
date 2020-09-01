@@ -1,40 +1,43 @@
 # appointy_round1
-API using GoLang and MongoDB
+<b>API using GoLang and MongoDB</b>
 
 
-Task 1 | Meetings API
+Task 1 | Meetings API<br>
 
-The task is to develop a basic version of meeting scheduling API. You are only required to develop the API for the system. Below are the details.
+The task is to develop a basic version of meeting scheduling API. You are only required to develop the API for the system. Below are the details.<br>
 
-Meetings should have the following Attributes. All fields are mandatory unless marked optional:
-Id
-Title
-Participants
-Start Time
-End Time
-Creation Timestamp
+Meetings should have the following Attributes. All fields are mandatory unless marked optional:<br>
+Id<br>
+Title<br>
+Participants<br>
+Start Time<br>
+End Time<br>
+Creation Timestamp<br>
 
-Participants should have the following Attributes. All fields are mandatory unless marked optional:
-Name
-Email
-RSVP (i.e. Yes/No/MayBe/Not Answered)
+Participants should have the following Attributes. All fields are mandatory unless marked optional:<br>
+Name<br>
+Email<br>
+RSVP (i.e. Yes/No/MayBe/Not Answered)<br>
 
-You are required to Design and Develop an HTTP JSON API capable of the following operations,
-Schedule a meeting
-Should be a POST request
-Use JSON request body
+You are required to Design and Develop an HTTP JSON API capable of the following operations,<br>
+Schedule a meeting<br>
+Should be a POST request<br>
+Use JSON request body<br>
 URL should be ‘/meetings’
-Must return the meeting in JSON format
-Get a meeting using id
-Should be a GET request
-Id should be in the url parameter
-URL should be ‘/meeting/<id here>’
-Must return the meeting in JSON format
-List all meetings within a time frame
-Should be a GET request
-URL should be ‘/meetings?start=<start time here>&end=<end time here>’
-Must return a an array of meetings in JSON format that are within the time range
-List all meetings of a participant
-Should be a GET request
-URL should be ‘/articles?participant=<email id>’
-Must return a an array of meetings in JSON format that have the participant received in the email within the time range
+<br>Must return the meeting in JSON format
+
+<br>Get a meeting using id
+<br>Should be a GET request
+<br>Id should be in the url parameter
+<br>URL should be ‘/meeting/<id here>’
+<br>Must return the meeting in JSON format
+  
+<br>List all meetings within a time frame
+<br>Should be a GET request
+<br>URL should be ‘/meetings?start=<start time here>&end=<end time here>’
+<br>Must return a an array of meetings in JSON format that are within the time range
+  
+<br>List all meetings of a participant
+<br>Should be a GET request
+<br>URL should be ‘/articles?participant=<email id>’
+<br>Must return a an array of meetings in JSON format that have the participant received in the email within the time range
