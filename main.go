@@ -23,6 +23,7 @@ import (
 	"encoding/hex"
 )
 
+/*
 type Meeting struct {
 	ID                string        `json:"id"`
 	Title             string        `json:"title"`
@@ -36,7 +37,7 @@ type Participant struct {
 	Email string `json:"email"`
 	RSVP  string `json:"rsvp"`
 }
-
+*/
 /*
 type time struct {
 	d int `json:"d"`
@@ -47,10 +48,13 @@ type time struct {
 }
 */
 
+//uri --------- "mongodb+srv://new_user:5XIeSJBPkyECny53@cluster0.anp21.gcp.mongodb.net/<meetings>?retryWrites=true&w=majority"
+//url --------- "mongodb://localhost:27017"
+
 //Global variables for storing results for different requests
 
-var Meetings []Meeting //stores all meetings
-var meetingById Meeting
+//var Meetings []Meeting //stores all meetings
+var meetingById bson.M
 var meetingsInTime bson.M
 var meetingsOfParticipant bson.M
 
@@ -87,14 +91,14 @@ func returnMeetingsInTime(w http.ResponseWriter, r *http.Request) {
 
 	u, _ := url.Parse(r.URL.String())
 	q, _ := url.ParseQuery(u.RawQuery)
-	if q.Get("start") == "" && q.Get("end") == "" {	//if no querry regarding start and end time given it will schedule meeting, not appropriat but it will schedule meeting for "/meetings"
+	if q.Get("start") == "" && q.Get("end") == "" {
 		fmt.Println("Endpoint Hit: schedulingMeeting")
 		scheduleMeeting(w, r)
 	} else {
 		fmt.Println("Endpoint Hit: returnMeetingsInTime")
 
-		startTime, err := strconv.ParseInt(q.Get("end"), 10, 32)
-		endTime, err := strconv.ParseInt(q.Get("end"), 10, 32)
+		startTime, _ := strconv.Atoi(q.Get("start"))
+		endTime, _ := strconv.Atoi(q.Get("end"))
 		getMeetingsInTime(startTime, endTime)
 		json.NewEncoder(w).Encode(meetingsInTime)
 	}
@@ -115,7 +119,7 @@ func returnMeetinsOfParticipant(w http.ResponseWriter, r *http.Request) {
 func getMeetingById(id1 string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb+srv://new_user:5XIeSJBPkyECny53@cluster0.anp21.gcp.mongodb.net/<meetings>?retryWrites=true&w=majority"))
 
 	ctx, cancel = context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
@@ -124,7 +128,7 @@ func getMeetingById(id1 string) {
 	meetingCollection := client.Database("db").Collection("meetings")
 
 	// Get a MongoDB document using the FindOne() method
-	err = meetingCollection.FindOne(context.TODO(), bson.D{ID: id1}).Decode(&meetingById)
+	err = meetingCollection.FindOne(context.TODO(), bson.D{{"ID", id1}}).Decode(&meetingById)
 	if err != nil {
 		fmt.Println("FindOne() No meeting found:", err)
 		os.Exit(1)
@@ -138,10 +142,10 @@ func getMeetingById(id1 string) {
 
 }
 
-func newMeetPossible(email1 string, startTime int){
+func newMeetPossible(email1 string, startTime int) bool {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb+srv://new_user:5XIeSJBPkyECny53@cluster0.anp21.gcp.mongodb.net/<meetings>?retryWrites=true&w=majority"))
 
 	ctx, cancel = context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
@@ -149,7 +153,9 @@ func newMeetPossible(email1 string, startTime int){
 
 	meetingCollection := client.Database("db").Collection("meetings")
 
-	cursor, err := meetingCollection.Find(context.TODO(), bson.D{StartTime:startTime, RSVP: "yes", Participants: bson.D{Email: email1}})
+	cursor, err := meetingCollection.Find(context.TODO(), bson.D{{"StartTime", startTime}, {"RSVP", "yes"}, {"Participants", bson.D{{"$elemMatch", bson.D{{"Email", email1}}}}}})
+
+	var possible bool = true
 
 	// Find() method raised an error
 	if err != nil {
@@ -159,7 +165,7 @@ func newMeetPossible(email1 string, startTime int){
 		// If the API call was a success
 	} else {
 		// iterate over docs using Next()
-		
+
 		for cursor.Next(ctx) {
 
 			err := cursor.Decode(&meetingsOfParticipant)
@@ -168,9 +174,9 @@ func newMeetPossible(email1 string, startTime int){
 			if err != nil {
 				fmt.Println("cursor.Next() checking for scheduling meeting error:", err)
 				os.Exit(1)
-			}
-			else{
-				return false
+			} else {
+				possible = false
+				break
 			}
 
 		}
@@ -181,13 +187,13 @@ func newMeetPossible(email1 string, startTime int){
 			panic(err)
 		}
 	}()
-	return true
+	return possible
 }
 
 func getMeetingsOfParticipant(email1 string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb+srv://new_user:5XIeSJBPkyECny53@cluster0.anp21.gcp.mongodb.net/<meetings>?retryWrites=true&w=majority"))
 
 	ctx, cancel = context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
@@ -195,7 +201,7 @@ func getMeetingsOfParticipant(email1 string) {
 
 	meetingCollection := client.Database("db").Collection("meetings")
 
-	cursor, err := meetingCollection.Find(context.TODO(), bson.D{Email: email1})
+	cursor, err := meetingCollection.Find(context.TODO(), bson.D{{"Participants", bson.D{{"$elemMatch", bson.D{{"Email", email1}}}}}})
 
 	// Find() method raised an error
 	if err != nil {
@@ -227,7 +233,7 @@ func getMeetingsOfParticipant(email1 string) {
 func getMeetingsInTime(startTime1 int, endTime1 int) {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb+srv://new_user:5XIeSJBPkyECny53@cluster0.anp21.gcp.mongodb.net/<meetings>?retryWrites=true&w=majority"))
 
 	ctx, cancel = context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
@@ -235,7 +241,7 @@ func getMeetingsInTime(startTime1 int, endTime1 int) {
 
 	meetingCollection := client.Database("db").Collection("meetings")
 
-	cursor, err := meetingCollection.Find(context.TODO(), bson.D{{StartTime: {"$gt": starttime1, "$lt": endTime1}}, {EndTime: {"$gt": startTime1, "$lt": endTime1}}}) //$ giving error
+	cursor, err := meetingCollection.Find(context.TODO(), bson.D{{"StartTime", bson.D{{"$gt", startTime1}, {"$lt", endTime1}}}, {"EndTime", bson.D{{"$gt", startTime1}, {"$lt", endTime1}}}}) //$ giving error
 
 	// Find() method raised an error
 	if err != nil {
@@ -265,6 +271,7 @@ func getMeetingsInTime(startTime1 int, endTime1 int) {
 
 }
 
+/*
 func fewHardCodedMeetings() {
 	Meetings = []Meeting{
 		Meeting{ID: "id1", Title: "title1", Participants: []Participant{Participant{Name: "name", Email: "email", RSVP: "rsvp"}, Participant{Name: "name", Email: "email", RSVP: "rsvp"}}, StartTime: 0, EndTime: 1, CreationTimestamp: "xyz"},
@@ -277,6 +284,7 @@ func fewHardCodedMeetings() {
 		Meeting{ID: "id8", Title: "title8", Participants: []Participant{Participant{Name: "name", Email: "email", RSVP: "rsvp"}, Participant{Name: "name", Email: "email", RSVP: "rsvp"}}, StartTime: 8, EndTime: 9, CreationTimestamp: "xyz"},
 	}
 }
+*/
 
 func randomHex(n int) (string, error) {
 	bytes := make([]byte, n)
@@ -311,21 +319,22 @@ func scheduleMeeting(w http.ResponseWriter, r *http.Request) {
 	participantName := "$_POST['participantName']"
 	email := "$_POST['email']"
 	rsvp := "$_POST['rsvp']"
-	startTime := "$_POST['startTime']"
-	endTime := "$_POST['endTime']"
+	startTime, _ := strconv.Atoi("$_POST['startTime']")
+	endTime, _ := strconv.Atoi("$_POST['endTime']")
 
-	if newMeetPossible(email1 , startTime ) == true:
-	insertDocument(id, meetingTitle, participantName, email, rsvp, startTime, endTime)
-	else
-	fmt.Fprintf(w, "busy schedule, cant schedule meeting")
-
+	var possible bool = newMeetPossible(email, startTime)
+	if possible == true {
+		insertDocument(id, meetingTitle, participantName, email, rsvp, startTime, endTime)
+	} else {
+		fmt.Fprintf(w, "busy schedule, cant schedule meeting")
+	}
 
 }
 
 func insertDocument(id string, title string, name string, email string, rsvp string, startTime int, endTime int) {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb+srv://new_user:5XIeSJBPkyECny53@cluster0.anp21.gcp.mongodb.net/<meetings>?retryWrites=true&w=majority"))
 
 	ctx, cancel = context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
@@ -333,19 +342,20 @@ func insertDocument(id string, title string, name string, email string, rsvp str
 
 	meetingCollection := client.Database("db").Collection("meetings")
 
-	meet1 := Meeting{
-		ID:    id,
-		Title: title,
-		Participants: []Participant{
-			Participant{
-				Name:  name,
-				Email: email,
-				RSVP:  rsvp}},
-		StartTime:         startTime,
-		EndTime:           endTime,
-		CreationTimestamp: "xyz"}
+	insertResult, err := meetingCollection.InsertOne(
+		ctx,
+		bson.D{
+			{"ID", id},
+			{"Title", title},
+			{"Participants", bson.A{
+				bson.D{
+					{"Name", name},
+					{"Email", email},
+					{"RSVP", rsvp}}}},
+			{"StartTime", startTime},
+			{"EndTime", endTime},
+			{"CreationTimestamp", "xyz"}})
 
-	insertResult, err := meetingCollection.InsertOne(ctx, meet1)
 	if err != nil {
 		panic(err)
 	}
@@ -360,6 +370,6 @@ func insertDocument(id string, title string, name string, email string, rsvp str
 }
 
 func main() {
-	fewHardCodedMeetings()
+	//fewHardCodedMeetings()
 	handleRequests()
 }
