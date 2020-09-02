@@ -48,7 +48,7 @@ type time struct {
 }
 */
 
-//uri --------- "mongodb+srv://new_user:5XIeSJBPkyECny53@cluster0.anp21.gcp.mongodb.net/<meetings>?retryWrites=true&w=majority"
+//uri --------- "mongodb+srv://new_user:<PASSWORD>@cluster0.anp21.gcp.mongodb.net/<meetings>?retryWrites=true&w=majority"         <PASSWORD>:5XIeSJBPkyECny53
 //url --------- "mongodb://localhost:27017"
 
 //Global variables for storing results for different requests
