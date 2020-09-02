@@ -296,25 +296,24 @@ func randomHex(n int) (string, error) {
 
 func scheduleMeeting(w http.ResponseWriter, r *http.Request) {
 	id, _ := randomHex(6)
-	fmt.Fprintf(w, "<form action=\"/meeting/%s\">"+
-		"<h3>Schedule Meeting</h3>"+
-		"<label for=\"participantName\">Name:</label><br>"+
-		"<input type=\"text\" id=\"participantName\" name=\"participantName\"><br>"+
-		"<label for=\"email\">Email:</label><br>"+
-		"<input type=\"text\" id=\"email\" name=\"email\"><br>"+
-		"<label for=\"meetingTitle\">Title:</label><br>"+
-		"<input type=\"text\" id=\"meetingTitle\" name=\"meetingTitle\"><br>"+
-		"<label for=\"email\">Email:</label><br>"+
-		"<input type=\"text\" id=\"email\" name=\"email\"><br>"+
-		"<label for=\"rsvp\">RSVP:</label><br>"+
-		"<input type=\"text\" id=\"rsvp\" name=\"rsvp\"><br>"+
-		"<label for=\"startTime\">Start Time:</label><br>"+
-		"<input type=\"text\" id=\"startTime\" name=\"startTime\"><br>"+
-		"<label for=\"endTime\">End Time:</label><br>"+
-		"<input type=\"text\" id=\"endTime\" name=\"endTime\"><br><br>"+
-		"<input type=\"submit\" value=\"Submit\"><br>"+
-		"</form>",
-		id)
+	
+	fmt.Fprintf(w, "<b>Schedule Meeting</b>"+
+			"<form action=\"/meeting/%s\">"+
+			"<label for=\"participantName\">Name:</label><br>"+
+			"<input type=\"text\" id=\"participantName\" name=\"participantName\"><br>"+
+			"<label for=\"email\">Email:</label><br>"+
+			"<input type=\"text\" id=\"email\" name=\"email\"><br>"+
+			"<label for=\"meetingTitle\">Title:</label><br>"+
+			"<input type=\"text\" id=\"meetingTitle\" name=\"meetingTitle\"><br>"+
+			"<label for=\"rsvp\">RSVP:</label><br>"+
+			"<input type=\"text\" id=\"rsvp\" name=\"rsvp\"><br>"+
+			"<label for=\"startTime\">Start Time:</label><br>"+
+			"<input type=\"text\" id=\"startTime\" name=\"startTime\"><br>"+
+			"<label for=\"endTime\">End Time:</label><br>"+
+			"<input type=\"text\" id=\"endTime\" name=\"endTime\"><br><br>"+
+			"<input type=\"submit\" value=\"Submit\"><br>"+
+			"</form>", id)
+	
 	meetingTitle := "$_POST['meetingTitle']"
 	participantName := "$_POST['participantName']"
 	email := "$_POST['email']"
