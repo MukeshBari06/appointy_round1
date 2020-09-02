@@ -87,7 +87,7 @@ func returnMeetingsInTime(w http.ResponseWriter, r *http.Request) {
 
 	u, _ := url.Parse(r.URL.String())
 	q, _ := url.ParseQuery(u.RawQuery)
-	if r.URL.Path[1] == "" {
+	if q.Get("start") == "" && q.Get("end") == "" {	//if no querry regarding start and end time given it will schedule meeting, not appropriat but it will schedule meeting for "/meetings"
 		fmt.Println("Endpoint Hit: schedulingMeeting")
 		scheduleMeeting(w, r)
 	} else {
